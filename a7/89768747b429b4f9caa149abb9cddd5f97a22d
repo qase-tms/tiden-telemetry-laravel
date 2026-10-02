@@ -1,0 +1,19 @@
+tests/IntegrationTest.php
+  s_6b815d6a11a5f5::t_7f2a3c4a562af9 21,66-83,194-199,229-240
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a789768747b429b4f9caa149abb9cddd5f97a22d",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
