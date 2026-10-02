@@ -1,0 +1,35 @@
+config/tiden.php
+  s_6b815d6a11a5f5::t_5c158dbbc7c7b6 44-49
+tests/QueueTimeoutCaptureTest.php
+  s_6b815d6a11a5f5::t_2ef5714d6a0473 1-13,15-44,46-56,58-64,66-73,76-82,84-117,119,121-122
+  s_6b815d6a11a5f5::t_0a4c2319736e27 14,45,57,65,74-75,83,118,120
+  s_6b815d6a11a5f5::t_0952a55b7d9f4f 123-160
+tests/Fixtures/NonKillingWorker.php
+  s_6b815d6a11a5f5::t_95347b45678f17 1-19
+tests/Fixtures/TimeoutJob.php
+  s_6b815d6a11a5f5::t_cd14f1cae1470c 1-19
+src/TidenServiceProvider.php
+  s_6b815d6a11a5f5::t_e1c10d277088aa 82-88
+src/QueueTimeoutCapture.php
+  s_6b815d6a11a5f5::t_87b2eea6713781 1-39
+tests/Fixtures/FailingJob.php
+  s_6b815d6a11a5f5::t_0b3e27cd85b634 1-20
+tests/Fixtures/ThrowingBeforeSend.php
+  s_6b815d6a11a5f5::t_b4bcac2d3ab90b 1-17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "98cacee3d2629017cd2eb3c8b3ad1781c1144946",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
