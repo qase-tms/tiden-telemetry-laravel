@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tiden\Laravel;
 
+use Closure;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -41,7 +42,13 @@ final class TidenServiceProvider extends ServiceProvider
                 'release' => $config['release'] ?? null,
                 'environment' => $config['environment'] ?? null,
                 'send_default_pii' => (bool) ($config['send_default_pii'] ?? false),
+                'http_timeout' => self::resolveHttpTimeout($config['http_timeout'] ?? null, $this->app->runningInConsole()),
+                'max_breadcrumbs' => (int) ($config['max_breadcrumbs'] ?? 100),
             ];
+            $beforeSend = $this->resolveBeforeSend($config['before_send'] ?? null);
+            if ($beforeSend !== null) {
+                $options['before_send'] = $beforeSend;
+            }
 
             // Laravel owns global error handling, so the core SDK's own handlers
             // are disabled — capture flows through the reportable callback below.
@@ -73,5 +80,44 @@ final class TidenServiceProvider extends ServiceProvider
                 'tiden-config',
             );
         }
+    }
+
+    /**
+     * A configured positive number wins; otherwise 5 s in the console (workers
+     * and commands can afford to wait) and 2 s on the request path.
+     *
+     * @internal
+     */
+    public static function resolveHttpTimeout(mixed $configured, bool $console): float
+    {
+        if (is_numeric($configured) && (float) $configured > 0) {
+            return (float) $configured;
+        }
+
+        return $console ? 5.0 : 2.0;
+    }
+
+    /**
+     * `before_send` must survive `config:cache`, so only an array callable or the
+     * class-string of an invokable is accepted; the class is resolved from the
+     * container. Closures and anything else are ignored.
+     */
+    private function resolveBeforeSend(mixed $configured): ?callable
+    {
+        if ($configured instanceof Closure) {
+            return null;
+        }
+
+        if (is_array($configured)) {
+            return is_callable($configured) ? $configured : null;
+        }
+
+        if (is_string($configured) && class_exists($configured)) {
+            $instance = $this->app->make($configured);
+
+            return is_callable($instance) ? $instance : null;
+        }
+
+        return null;
     }
 }
