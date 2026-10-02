@@ -1,0 +1,27 @@
+src/ErrorLogCapture.php
+  s_6b815d6a11a5f5::t_e7ac72b3c71e75 18-19,40-46
+src/ReportedExceptions.php
+  s_6b815d6a11a5f5::t_794732f6f11694 1-47
+src/TidenServiceProvider.php
+  s_6b815d6a11a5f5::t_310a4f9a7940b8 64
+tests/ErrorLogCaptureTest.php
+  s_6b815d6a11a5f5::t_ec8d2f13bdafe9 18,75-105
+tests/TestCase.php
+  s_6b815d6a11a5f5::t_0c9a44a3d49f1a 13,39,57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "25d534b2da2e8e9bee939b34b7300b6cecaab5de",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
