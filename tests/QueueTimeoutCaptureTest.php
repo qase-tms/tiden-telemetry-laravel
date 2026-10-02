@@ -87,12 +87,13 @@ final class QueueTimeoutCaptureTest extends TestCase
     }
 
     #[DefineEnvironment('throwingBeforeSend')]
-    public function test_listener_never_throws(): void
+    public function test_failed_capture_does_not_break_the_dispatch(): void
     {
         $job = $this->syncJob();
 
-        // The capture path fails (before_send throws); the event dispatch, and
-        // with it the worker's kill() after JobFailed, must still go through.
+        // The capture path fails (before_send throws). The SDK swallows it, so
+        // the event dispatch, and with it the worker's kill() after JobFailed,
+        // still goes through; the listener adds no guard of its own.
         $this->app['events']->dispatch(new JobFailed('database', $job, TimeoutExceededException::forJob($job)));
 
         $this->assertCount(0, $this->transport->envelopes);

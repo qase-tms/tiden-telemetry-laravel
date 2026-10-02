@@ -7,7 +7,6 @@ namespace Tiden\Laravel;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\TimeoutExceededException;
-use Throwable;
 use Tiden\Sdk;
 
 /**
@@ -28,12 +27,9 @@ final class QueueTimeoutCapture
                 return;
             }
 
-            try {
-                Sdk::captureException($event->exception);
-            } catch (Throwable) {
-                // The worker kills the process right after this event; a failed
-                // capture must not stop that from happening.
-            }
+            // The worker kills the process right after this event. The SDK's
+            // capture never throws, so a failed send cannot stop that from happening.
+            Sdk::captureException($event->exception);
         });
     }
 }
