@@ -11,7 +11,7 @@
     "type": "library",
     "require": {
         "php": "^8.3",
-        "tiden/telemetry-php": "^0.1",
+        "tiden/telemetry-php": "^0.2",
         "illuminate/support": "^12.0 || ^13.0",
         "illuminate/contracts": "^12.0 || ^13.0"
     },

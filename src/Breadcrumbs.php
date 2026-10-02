@@ -17,16 +17,24 @@ use Tiden\Sdk;
  * Records Laravel activity (SQL, queue jobs, logs) as breadcrumbs on the SDK's
  * scope, so they ride along with the next captured event. Each source is opt-out
  * via config. SQL bindings and log context are intentionally omitted (PII).
+ *
+ * SQL and log messages are cut to `max_message_length` bytes: a worker that
+ * runs bulk inserts would otherwise carry megabytes of SQL text on one event,
+ * past the ingest's 1 MiB envelope cap.
  */
 final class Breadcrumbs
 {
-    /** @param array<string,bool> $enabled */
-    public static function register(Dispatcher $events, array $enabled): void
+    public const DEFAULT_MAX_MESSAGE_LENGTH = 1024;
+
+    /** @param array{sql?: bool, queue?: bool, logs?: bool, max_message_length?: int} $config */
+    public static function register(Dispatcher $events, array $config): void
     {
-        if ($enabled['sql'] ?? true) {
-            $events->listen(QueryExecuted::class, static function (QueryExecuted $e): void {
+        $limit = (int) ($config['max_message_length'] ?? self::DEFAULT_MAX_MESSAGE_LENGTH);
+
+        if ($config['sql'] ?? true) {
+            $events->listen(QueryExecuted::class, static function (QueryExecuted $e) use ($limit): void {
                 Sdk::addBreadcrumb(new Breadcrumb(
-                    message: $e->sql,
+                    message: self::cut($e->sql, $limit),
                     category: 'query',
                     type: 'query',
                     data: ['duration_ms' => $e->time, 'connection' => $e->connectionName],
@@ -34,7 +42,7 @@ final class Breadcrumbs
             });
         }
 
-        if ($enabled['queue'] ?? true) {
+        if ($config['queue'] ?? true) {
             $events->listen(JobProcessing::class, static function (JobProcessing $e): void {
                 Sdk::addBreadcrumb(new Breadcrumb(
                     message: $e->job->resolveName(),
@@ -62,15 +70,30 @@ final class Breadcrumbs
             });
         }
 
-        if ($enabled['logs'] ?? true) {
-            $events->listen(MessageLogged::class, static function (MessageLogged $e): void {
+        if ($config['logs'] ?? true) {
+            $events->listen(MessageLogged::class, static function (MessageLogged $e) use ($limit): void {
+                // The SDK's own failure report would otherwise fill the trail
+                // with one crumb per undelivered event during a backoff.
+                if ((string) $e->message === TransportFailureLogger::MESSAGE) {
+                    return;
+                }
                 Sdk::addBreadcrumb(new Breadcrumb(
-                    message: (string) $e->message,
+                    message: self::cut((string) $e->message, $limit),
                     category: 'log',
                     level: (string) $e->level,
                     type: 'log',
                 ));
             });
         }
+    }
+
+    /** Cuts to at most $limit bytes without splitting a UTF-8 character; 0 = unlimited. */
+    private static function cut(string $message, int $limit): string
+    {
+        if ($limit <= 0 || strlen($message) <= $limit) {
+            return $message;
+        }
+
+        return mb_strcut($message, 0, $limit, 'UTF-8');
     }
 }
