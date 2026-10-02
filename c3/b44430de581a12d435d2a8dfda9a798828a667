@@ -1,0 +1,30 @@
+tests/Fixtures/IgnoredLogException.php
+  s_6b815d6a11a5f5::t_1f9c939b84653b 1-10
+src/ErrorLogCapture.php
+  s_6b815d6a11a5f5::t_47a5cb18751b66 1-45
+  s_6b815d6a11a5f5::t_d1c7ca277c9cc4 46-57
+config/tiden.php
+  s_6b815d6a11a5f5::t_5c158dbbc7c7b6 50-55
+tests/ErrorLogCaptureTest.php
+  s_6b815d6a11a5f5::t_3e249073418b93 15-16,34-35,43-44,51,54,97,106,115,121-122,124-126,129-130,132-133,158,160,163,165-169
+  s_6b815d6a11a5f5::t_663a18d098afec 1-14,17-33,36-42,45-50,52-53,55-96,98-105,107-114,116-120,123,127-128,131,156-157,159,161-162,164,170-171
+  s_6b815d6a11a5f5::t_72ae03cd7c343f 134-155
+src/TidenServiceProvider.php
+  s_6b815d6a11a5f5::t_e1c10d277088aa 89-94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c3b44430de581a12d435d2a8dfda9a798828a667",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
