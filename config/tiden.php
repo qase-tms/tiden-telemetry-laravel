@@ -42,4 +42,10 @@ return [
         // character boundary). 0 = unlimited; empty or invalid = the default.
         'max_message_length' => env('TIDEN_BREADCRUMBS_MAX_MESSAGE_LENGTH', 1024),
     ],
+
+    // Capture queue jobs that fail by running past their timeout. The worker
+    // kills the process without reporting them, so nothing else sends them.
+    'queue' => [
+        'capture_timeouts' => (bool) env('TIDEN_QUEUE_CAPTURE_TIMEOUTS', true),
+    ],
 ];

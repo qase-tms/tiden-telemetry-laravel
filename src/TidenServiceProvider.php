@@ -80,6 +80,13 @@ final class TidenServiceProvider extends ServiceProvider
                 'logs' => (bool) ($breadcrumbs['logs'] ?? true),
                 'max_message_length' => self::resolveMaxMessageLength($breadcrumbs['max_message_length'] ?? null),
             ]);
+
+            // Timed-out jobs never reach report(): the worker fails them and kills
+            // the process. Other job failures are reported by the worker itself.
+            $queue = (array) ($config['queue'] ?? []);
+            if ((bool) ($queue['capture_timeouts'] ?? true)) {
+                QueueTimeoutCapture::register($events);
+            }
         }
 
         if ($this->app->runningInConsole()) {
