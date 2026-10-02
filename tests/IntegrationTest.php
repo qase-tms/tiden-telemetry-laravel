@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace Tiden\Laravel\Tests;
 
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Log\Events\MessageLogged;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\Log;
 use Orchestra\Testbench\Attributes\DefineEnvironment;
+use Tiden\Laravel\Breadcrumbs;
 use Tiden\Laravel\Tests\Fixtures\BeforeSendHooks;
 use Tiden\Laravel\Tests\Fixtures\InvokableBeforeSend;
 use Tiden\Laravel\TidenServiceProvider;
+use Tiden\Laravel\UnitOfWorkScope;
 use Tiden\Sdk;
 
 final class IntegrationTest extends TestCase
@@ -24,6 +30,7 @@ final class IntegrationTest extends TestCase
         $this->assertNull(config('tiden.http_timeout'));
         $this->assertSame(100, config('tiden.max_breadcrumbs'));
         $this->assertNull(config('tiden.before_send'));
+        $this->assertTrue(config('tiden.reset_scope'));
         $this->assertSame(1024, config('tiden.breadcrumbs.max_message_length'));
     }
 
@@ -92,6 +99,26 @@ final class IntegrationTest extends TestCase
         $this->assertArrayNotHasKey('before_send', $this->lastEvent()['tags'] ?? []);
     }
 
+    #[DefineEnvironment('withoutDsn')]
+    public function test_nothing_registers_without_dsn(): void
+    {
+        $this->assertNull(Sdk::getClient());
+
+        foreach ([QueryExecuted::class, MessageLogged::class, JobProcessing::class, CommandStarting::class] as $event) {
+            $owners = $this->listenerOwners($event);
+            $this->assertNotContains(UnitOfWorkScope::class, $owners, $event);
+            $this->assertNotContains(Breadcrumbs::class, $owners, $event);
+        }
+    }
+
+    #[DefineEnvironment('withoutScopeReset')]
+    public function test_reset_scope_can_be_disabled(): void
+    {
+        $this->assertNotContains(UnitOfWorkScope::class, $this->listenerOwners(JobProcessing::class));
+        $this->assertNotContains(UnitOfWorkScope::class, $this->listenerOwners(CommandStarting::class));
+        $this->assertContains(Breadcrumbs::class, $this->listenerOwners(JobProcessing::class));
+    }
+
     protected function useThreeBreadcrumbs($app): void
     {
         $app['config']->set('tiden.max_breadcrumbs', 3);
@@ -109,5 +136,16 @@ final class IntegrationTest extends TestCase
     protected function useClosureBeforeSend($app): void
     {
         $app['config']->set('tiden.before_send', static fn (array $event): ?array => null);
+    }
+
+    protected function withoutDsn($app): void
+    {
+        $this->withDsn = false;
+        $app['config']->set('tiden.dsn', null);
+    }
+
+    protected function withoutScopeReset($app): void
+    {
+        $app['config']->set('tiden.reset_scope', false);
     }
 }

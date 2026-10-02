@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Tiden\Laravel\Tests;
 
+use Closure;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as Orchestra;
+use ReflectionFunction;
 use Tiden\Laravel\TidenServiceProvider;
+use Tiden\Laravel\UnitOfWorkScope;
 use Tiden\Scope;
 use Tiden\Sdk;
 use Tiden\Transport\NullTransport;
@@ -18,10 +22,19 @@ abstract class TestCase extends Orchestra
     /** The in-memory transport the provider hands to Sdk::init (see defineEnvironment). */
     protected NullTransport $transport;
 
+    /**
+     * Set to false from a #[DefineEnvironment] method to boot without a DSN.
+     * Testbench runs attribute methods before defineEnvironment(), so a config
+     * value they set would be overwritten here; the flag works in either order.
+     */
+    protected bool $withDsn = true;
+
     protected function setUp(): void
     {
-        // The SDK keeps static state; no test may see the previous test's client.
+        // The SDK and the scope listeners keep static state; a test that boots
+        // without a DSN must not see the previous test's client.
         Sdk::close();
+        UnitOfWorkScope::reset();
 
         parent::setUp();
 
@@ -38,6 +51,7 @@ abstract class TestCase extends Orchestra
         parent::tearDown();
 
         Sdk::close();
+        UnitOfWorkScope::reset();
     }
 
     /** @return array<int,class-string> */
@@ -51,7 +65,9 @@ abstract class TestCase extends Orchestra
         // Runs before providers boot, so the provider's Sdk::init picks it up.
         $app->singleton(TransportInterface::class, static fn (): NullTransport => new NullTransport);
 
-        $app['config']->set('tiden.dsn', 'http://test@localhost/proj');
+        if ($this->withDsn) {
+            $app['config']->set('tiden.dsn', 'http://test@localhost/proj');
+        }
         $app['config']->set('tiden.environment', 'testing');
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
@@ -130,5 +146,29 @@ abstract class TestCase extends Orchestra
     protected function breadcrumbMessages(array $event): array
     {
         return array_map(static fn (array $c): string => (string) ($c['message'] ?? ''), $this->breadcrumbsOf($event));
+    }
+
+    /**
+     * The class that registered each listener for $event, in registration
+     * (= call) order. Closures report the class they were written in.
+     *
+     * @return list<string>
+     */
+    protected function listenerOwners(string $event): array
+    {
+        $events = $this->app->make('events');
+        $this->assertInstanceOf(Dispatcher::class, $events);
+
+        $owners = [];
+        foreach ($events->getRawListeners()[$event] ?? [] as $listener) {
+            $owners[] = match (true) {
+                $listener instanceof Closure => (new ReflectionFunction($listener))->getClosureScopeClass()?->getName() ?? 'Closure',
+                is_array($listener) => is_object($listener[0]) ? $listener[0]::class : (string) $listener[0],
+                is_string($listener) => explode('@', $listener)[0],
+                default => get_debug_type($listener),
+            };
+        }
+
+        return $owners;
     }
 }

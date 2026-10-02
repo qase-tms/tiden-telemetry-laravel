@@ -65,6 +65,12 @@ final class TidenServiceProvider extends ServiceProvider
 
             $events = $this->app->make(Dispatcher::class);
 
+            // Before Breadcrumbs: the per-job clear must run ahead of the job's
+            // own "processing" crumb (same-event listeners run in order).
+            if ((bool) ($config['reset_scope'] ?? true)) {
+                UnitOfWorkScope::register($events);
+            }
+
             $breadcrumbs = (array) ($config['breadcrumbs'] ?? []);
             Breadcrumbs::register($events, [
                 'sql' => (bool) ($breadcrumbs['sql'] ?? true),

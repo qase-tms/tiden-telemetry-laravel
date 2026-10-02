@@ -27,6 +27,10 @@ return [
     // are ignored because they break `php artisan config:cache`.
     'before_send' => null,
 
+    // Start every queue job and top-level Artisan command with fresh
+    // breadcrumbs, and discard the tags a job sets when it finishes.
+    'reset_scope' => (bool) env('TIDEN_RESET_SCOPE', true),
+
     // Record Laravel activity as breadcrumbs on the next captured event.
     // (SQL bindings and log context are never recorded.)
     'breadcrumbs' => [
