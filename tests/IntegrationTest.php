@@ -9,13 +9,16 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Orchestra\Testbench\Attributes\DefineEnvironment;
 use Tiden\Laravel\Breadcrumbs;
 use Tiden\Laravel\Tests\Fixtures\BeforeSendHooks;
 use Tiden\Laravel\Tests\Fixtures\InvokableBeforeSend;
 use Tiden\Laravel\TidenServiceProvider;
+use Tiden\Laravel\TransportFailureLogger;
 use Tiden\Laravel\UnitOfWorkScope;
+use Tiden\Scope;
 use Tiden\Sdk;
 
 final class IntegrationTest extends TestCase
@@ -97,6 +100,56 @@ final class IntegrationTest extends TestCase
 
         $this->assertCount(1, $this->transport->envelopes, 'a closure that would drop the event was not applied');
         $this->assertArrayNotHasKey('before_send', $this->lastEvent()['tags'] ?? []);
+    }
+
+    public function test_transport_failure_is_logged_once_without_recursion(): void
+    {
+        $failure = ['reason' => 'curl_error', 'status' => null, 'bytes' => 512, 'curl_errno' => 28];
+
+        /** @var list<array<string,mixed>> $records */
+        $records = [];
+        // A listener that reports straight back into the logger, the way a log
+        // channel shipping to Tiden would on a failing transport.
+        Event::listen(MessageLogged::class, static function (MessageLogged $e) use (&$records, $failure): void {
+            if ($e->message === TransportFailureLogger::MESSAGE) {
+                $records[] = ['level' => $e->level, 'context' => $e->context];
+                TransportFailureLogger::log($failure);
+            }
+        });
+
+        TransportFailureLogger::log($failure);
+
+        $this->assertCount(1, $records);
+        $this->assertSame('debug', $records[0]['level']);
+        $this->assertSame($failure, $records[0]['context']);
+        $this->assertArrayNotHasKey('url', $records[0]['context']);
+        $this->assertArrayNotHasKey('payload', $records[0]['context']);
+
+        // The guard is released afterwards: the next failure is logged again.
+        TransportFailureLogger::log($failure);
+        $this->assertCount(2, $records);
+    }
+
+    public function test_sdk_transport_failures_reach_the_log(): void
+    {
+        /** @var list<array<string,mixed>> $contexts */
+        $contexts = [];
+        Event::listen(MessageLogged::class, static function (MessageLogged $e) use (&$contexts): void {
+            if ($e->message === TransportFailureLogger::MESSAGE) {
+                $contexts[] = $e->context;
+            }
+        });
+
+        // Tags are never truncated by the SDK's size cap, so this event cannot
+        // shrink below it: the client drops it and reports envelope_too_large.
+        Sdk::configureScope(static function (Scope $scope): void {
+            $scope->setTag('huge', str_repeat('x', 1_000_000));
+        });
+        Sdk::captureMessage('too big');
+
+        $this->assertCount(0, $this->transport->envelopes);
+        $this->assertCount(1, $contexts);
+        $this->assertSame('envelope_too_large', $contexts[0]['reason'] ?? null);
     }
 
     #[DefineEnvironment('withoutDsn')]

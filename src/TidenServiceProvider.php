@@ -44,6 +44,7 @@ final class TidenServiceProvider extends ServiceProvider
                 'send_default_pii' => (bool) ($config['send_default_pii'] ?? false),
                 'http_timeout' => self::resolveHttpTimeout($config['http_timeout'] ?? null, $this->app->runningInConsole()),
                 'max_breadcrumbs' => (int) ($config['max_breadcrumbs'] ?? 100),
+                'on_transport_failure' => [TransportFailureLogger::class, 'log'],
             ];
             $beforeSend = $this->resolveBeforeSend($config['before_send'] ?? null);
             if ($beforeSend !== null) {
