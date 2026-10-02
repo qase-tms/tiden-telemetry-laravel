@@ -18,6 +18,7 @@ use Tiden\Laravel\Tests\Fixtures\InvokableBeforeSend;
 use Tiden\Laravel\TidenServiceProvider;
 use Tiden\Laravel\TransportFailureLogger;
 use Tiden\Laravel\UnitOfWorkScope;
+use Tiden\Options;
 use Tiden\Scope;
 use Tiden\Sdk;
 
@@ -60,6 +61,24 @@ final class IntegrationTest extends TestCase
         Sdk::captureMessage('after five logs');
 
         $this->assertSame(['three', 'four', 'five'], $this->breadcrumbMessages($this->lastEvent()));
+    }
+
+    public function test_http_timeout_reaches_the_sdk_as_five_seconds_in_console(): void
+    {
+        // Testbench runs in the console and the config leaves http_timeout null.
+        $this->assertSame(5.0, $this->sdkOptions()->httpTimeout);
+    }
+
+    #[DefineEnvironment('useHalfSecondTimeout')]
+    public function test_configured_http_timeout_reaches_the_sdk(): void
+    {
+        $this->assertSame(0.5, $this->sdkOptions()->httpTimeout);
+    }
+
+    #[DefineEnvironment('useThreeBreadcrumbs')]
+    public function test_max_breadcrumbs_reaches_the_sdk(): void
+    {
+        $this->assertSame(3, $this->sdkOptions()->maxBreadcrumbs);
     }
 
     public function test_http_timeout_defaults_to_five_seconds_in_console(): void
@@ -172,6 +191,12 @@ final class IntegrationTest extends TestCase
         $this->assertContains(Breadcrumbs::class, $this->listenerOwners(JobProcessing::class));
     }
 
+    protected function useHalfSecondTimeout($app): void
+    {
+        // As env('TIDEN_HTTP_TIMEOUT') would deliver it.
+        $app['config']->set('tiden.http_timeout', '0.5');
+    }
+
     protected function useThreeBreadcrumbs($app): void
     {
         $app['config']->set('tiden.max_breadcrumbs', 3);
@@ -200,5 +225,17 @@ final class IntegrationTest extends TestCase
     protected function withoutScopeReset($app): void
     {
         $app['config']->set('tiden.reset_scope', false);
+    }
+
+    /** The Options the provider passed to Sdk::init (Client keeps them private). */
+    private function sdkOptions(): Options
+    {
+        $client = Sdk::getClient();
+        $this->assertNotNull($client);
+
+        $options = (new \ReflectionProperty($client, 'options'))->getValue($client);
+        $this->assertInstanceOf(Options::class, $options);
+
+        return $options;
     }
 }
