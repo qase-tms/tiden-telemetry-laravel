@@ -72,6 +72,11 @@ final class Breadcrumbs
 
         if ($config['logs'] ?? true) {
             $events->listen(MessageLogged::class, static function (MessageLogged $e) use ($limit): void {
+                // The SDK's own failure report would otherwise fill the trail
+                // with one crumb per undelivered event during a backoff.
+                if ((string) $e->message === TransportFailureLogger::MESSAGE) {
+                    return;
+                }
                 Sdk::addBreadcrumb(new Breadcrumb(
                     message: self::cut((string) $e->message, $limit),
                     category: 'log',
