@@ -114,6 +114,12 @@ With `Worker::$killOnTimeout = false` (Laravel 13) the worker does not kill the
 process: it throws the same `TimeoutExceededException` and reports it. Tiden
 sends the same exception object once, so this is still one event.
 
+The capture runs inside the worker's timeout handler, before the process is
+killed, and sends synchronously. A timed-out job therefore holds the process
+for up to `http_timeout` (5 s in the console by default, plus a connect timeout
+of at most 1 s) beyond its configured timeout. Set `TIDEN_HTTP_TIMEOUT` lower
+if a supervisor enforces a hard deadline right after the job's timeout.
+
 The worker reports every other job failure itself, so the integration does not
 capture those failures again.
 
