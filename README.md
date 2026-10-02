@@ -78,6 +78,16 @@ user, extra) would collect data from every job it runs. With `reset_scope` on
 
 Set `TIDEN_RESET_SCOPE=false` to keep one scope for the whole process.
 
+Two things to know:
+
+- When a job completes, the integration pops exactly one scope level. If a job
+  calls `Sdk::pushScope()` itself, it must call `Sdk::popScope()` before it
+  finishes.
+- The "processed" queue breadcrumb and the SQL the worker runs to poll for
+  jobs are recorded outside any job scope. Events from jobs never see them,
+  because each job starts with no breadcrumbs. An event that you capture from
+  the worker loop outside a job can carry up to `max_breadcrumbs` of them.
+
 ## Transport failures
 
 Sends are synchronous and never throw. When a send fails, the integration
