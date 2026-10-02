@@ -1,0 +1,27 @@
+src/QueueTimeoutCapture.php
+  s_6b815d6a11a5f5::t_87b2eea6713781 1-39
+tests/Fixtures/FailingJob.php
+  s_6b815d6a11a5f5::t_0b3e27cd85b634 1-20
+tests/Fixtures/NonKillingWorker.php
+  s_6b815d6a11a5f5::t_95347b45678f17 1-19
+tests/Fixtures/TimeoutJob.php
+  s_6b815d6a11a5f5::t_cd14f1cae1470c 1-19
+tests/QueueTimeoutCaptureTest.php
+  s_6b815d6a11a5f5::t_2ef5714d6a0473 1-141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4ff802189b7639041389c297f16e28f204668128",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
