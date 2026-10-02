@@ -1,0 +1,61 @@
+composer.json
+  s_6b815d6a11a5f5::t_b5c0f3e46a9cc4 14
+src/TidenServiceProvider.php
+  s_6b815d6a11a5f5::t_8b2466160b77f7 15,36-41,49,54-57
+  s_6b815d6a11a5f5::t_f318756b7562c8 68-69,77-80,82
+  s_6b815d6a11a5f5::t_a68f01d67b686e 7,46,50-53,99-114,146-148,152-163,171-176
+  s_6b815d6a11a5f5::t_a210efe3bc0cfc 70-75
+  s_6b815d6a11a5f5::t_c9ddca6b4f7cb9 48
+tests/BreadcrumbsTest.php
+  s_6b815d6a11a5f5::t_c3a82ee1a20eb7 23
+  s_6b815d6a11a5f5::t_df70af3118708a 10,32-77,108-116
+tests/IntegrationTest.php
+  s_6b815d6a11a5f5::t_41182e7a273ff7 44-45,48-49
+  s_6b815d6a11a5f5::t_ec1ee225e07b62 39
+  s_6b815d6a11a5f5::t_dd87787bec02e3 13-14,16-17,19,24,28-30,35-37,54-66,131-170,247-251,268-280
+  s_6b815d6a11a5f5::t_f7c56bcec3c5f7 7,9-11,15,21,38,221-240,281-291
+  s_6b815d6a11a5f5::t_c15f2cac081df9 12,20,23,171-220
+  s_6b815d6a11a5f5::t_7f2a3c4a562af9 22,67-84,241-246,292-303
+tests/TestCase.php
+  s_6b815d6a11a5f5::t_735e5c76a90171 8,10,15-18,22-24,32-33,36,38-53,55-56,65-67,78-148
+  s_6b815d6a11a5f5::t_1058d4ca00cd2d 7,9,12,14,25-31,34-35,37,54,68-70,150-173
+config/tiden.php
+  s_6b815d6a11a5f5::t_c845486bd42df8 41
+  s_6b815d6a11a5f5::t_3ec77f5e69e2a2 18-22,25-30
+  s_6b815d6a11a5f5::t_039ed0536a3673 31-34
+src/Breadcrumbs.php
+  s_6b815d6a11a5f5::t_91a6c740ac404b 20-23,27-30,32-35,37,45,73-74,81,89-98
+tests/Fixtures/BeforeSendHooks.php
+  s_6b815d6a11a5f5::t_54ba1886267246 1-20
+tests/Fixtures/InvokableBeforeSend.php
+  s_6b815d6a11a5f5::t_d863bc272de7a2 1-20
+src/UnitOfWorkScope.php
+  s_6b815d6a11a5f5::t_a913e3c54de92b 1-97
+tests/Fixtures/ScriptedJob.php
+  s_6b815d6a11a5f5::t_d5efa25c303e40 1-53
+tests/ListenerOrderTest.php
+  s_6b815d6a11a5f5::t_be282f09373b08 1-49
+tests/UnitOfWorkScopeTest.php
+  s_6b815d6a11a5f5::t_a6dbd0bb9b662e 1-203
+src/TransportFailureLogger.php
+  s_6b815d6a11a5f5::t_ed7c3b2fd2ff99 1-38
+README.md
+  s_6b815d6a11a5f5::t_da438a09b66279 37,39-43,45-80,91-98
+  s_6b815d6a11a5f5::t_913591f9151d3e 81-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1db5a45f6271381514028654841f899b0e4a8359",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
