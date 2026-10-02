@@ -1,0 +1,44 @@
+config/tiden.php
+  s_6b815d6a11a5f5::t_5c158dbbc7c7b6 44-49,50-55
+tests/QueueTimeoutCaptureTest.php
+  s_6b815d6a11a5f5::t_2ef5714d6a0473 1-13,15-44,46-56,58-64,66-73,76-82,84-117,119,121-122
+  s_6b815d6a11a5f5::t_0a4c2319736e27 14,45,57,65,74-75,83,118,120
+  s_6b815d6a11a5f5::t_0952a55b7d9f4f 123-125,126-132,135,137-159
+tests/Fixtures/NonKillingWorker.php
+  s_6b815d6a11a5f5::t_95347b45678f17 1-19
+tests/Fixtures/TimeoutJob.php
+  s_6b815d6a11a5f5::t_cd14f1cae1470c 1-19
+src/TidenServiceProvider.php
+  s_6b815d6a11a5f5::t_e1c10d277088aa 82-88,89-94
+src/QueueTimeoutCapture.php
+  s_6b815d6a11a5f5::t_87b2eea6713781 1-39
+tests/Fixtures/FailingJob.php
+  s_6b815d6a11a5f5::t_0b3e27cd85b634 1-20
+tests/Fixtures/ThrowingBeforeSend.php
+  s_6b815d6a11a5f5::t_b4bcac2d3ab90b 1-17
+tests/Fixtures/IgnoredLogException.php
+  s_6b815d6a11a5f5::t_1f9c939b84653b 1-10
+src/ErrorLogCapture.php
+  s_6b815d6a11a5f5::t_47a5cb18751b66 1-45
+  s_6b815d6a11a5f5::t_d1c7ca277c9cc4 46-57
+tests/ErrorLogCaptureTest.php
+  s_6b815d6a11a5f5::t_3e249073418b93 16-17,34-35,43-44,51,54,97,106,115,121-122,124-126,129-130,132-133,158,160,163,165-169
+  s_6b815d6a11a5f5::t_663a18d098afec 1-11,12,14,18-19,20-33,36-42,45-50,52-53,55-96,98-105,107-114,116-120,123,127-128,131,156-157,159,161-162,164,170-171
+  s_6b815d6a11a5f5::t_72ae03cd7c343f 134-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5f81f2b9ddad915d7840350ff2d73c468583af3f",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
