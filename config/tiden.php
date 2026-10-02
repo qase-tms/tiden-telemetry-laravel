@@ -21,5 +21,8 @@ return [
         'sql' => (bool) env('TIDEN_BREADCRUMBS_SQL', true),
         'queue' => (bool) env('TIDEN_BREADCRUMBS_QUEUE', true),
         'logs' => (bool) env('TIDEN_BREADCRUMBS_LOGS', true),
+        // SQL and log messages are cut to this many bytes (on a UTF-8
+        // character boundary). 0 = unlimited.
+        'max_message_length' => (int) env('TIDEN_BREADCRUMBS_MAX_MESSAGE_LENGTH', 1024),
     ],
 ];

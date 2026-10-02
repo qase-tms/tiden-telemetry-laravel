@@ -7,6 +7,7 @@ namespace Tiden\Laravel\Tests;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Orchestra\Testbench\Attributes\DefineEnvironment;
 
 final class BreadcrumbsTest extends TestCase
 {
@@ -26,5 +27,60 @@ final class BreadcrumbsTest extends TestCase
 
         $logs = array_filter($crumbs, static fn (array $c): bool => ($c['category'] ?? '') === 'log' && str_contains($c['message'] ?? '', 'hello from log'));
         $this->assertNotEmpty($logs, 'expected a log breadcrumb');
+    }
+
+    #[DefineEnvironment('useShortMessages')]
+    public function test_long_sql_and_log_messages_are_truncated(): void
+    {
+        DB::connection()->select("select '".str_repeat('x', 200)."' as x");
+        Log::info(str_repeat('y', 200));
+        // "€" is 3 bytes: 16 bytes would split the sixth one, so 5 survive (15 bytes).
+        Log::info(str_repeat('€', 20));
+
+        $this->app->make(ExceptionHandler::class)->report(new \RuntimeException('boom'));
+
+        $crumbs = $this->breadcrumbsOf($this->lastEvent());
+        $this->assertNotEmpty($crumbs);
+        foreach ($crumbs as $crumb) {
+            $this->assertLessThanOrEqual(16, strlen((string) $crumb['message']));
+        }
+
+        $messages = $this->breadcrumbMessages($this->lastEvent());
+        $this->assertContains("select 'xxxxxxxx", $messages);
+        $this->assertContains(str_repeat('y', 16), $messages);
+        $this->assertContains(str_repeat('€', 5), $messages);
+    }
+
+    #[DefineEnvironment('useUnlimitedMessages')]
+    public function test_zero_means_unlimited(): void
+    {
+        $sql = "select '".str_repeat('x', 3000)."' as x";
+        DB::connection()->select($sql);
+        Log::info(str_repeat('y', 3000));
+
+        $this->app->make(ExceptionHandler::class)->report(new \RuntimeException('boom'));
+
+        $messages = $this->breadcrumbMessages($this->lastEvent());
+        $this->assertContains($sql, $messages);
+        $this->assertContains(str_repeat('y', 3000), $messages);
+    }
+
+    public function test_default_limit_is_1024_bytes(): void
+    {
+        Log::info(str_repeat('y', 3000));
+
+        $this->app->make(ExceptionHandler::class)->report(new \RuntimeException('boom'));
+
+        $this->assertContains(str_repeat('y', 1024), $this->breadcrumbMessages($this->lastEvent()));
+    }
+
+    protected function useShortMessages($app): void
+    {
+        $app['config']->set('tiden.breadcrumbs.max_message_length', 16);
+    }
+
+    protected function useUnlimitedMessages($app): void
+    {
+        $app['config']->set('tiden.breadcrumbs.max_message_length', 0);
     }
 }

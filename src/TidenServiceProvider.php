@@ -56,9 +56,15 @@ final class TidenServiceProvider extends ServiceProvider
                 });
             }
 
-            /** @var array<string,bool> $breadcrumbs */
+            $events = $this->app->make(Dispatcher::class);
+
             $breadcrumbs = (array) ($config['breadcrumbs'] ?? []);
-            Breadcrumbs::register($this->app->make(Dispatcher::class), $breadcrumbs);
+            Breadcrumbs::register($events, [
+                'sql' => (bool) ($breadcrumbs['sql'] ?? true),
+                'queue' => (bool) ($breadcrumbs['queue'] ?? true),
+                'logs' => (bool) ($breadcrumbs['logs'] ?? true),
+                'max_message_length' => (int) ($breadcrumbs['max_message_length'] ?? Breadcrumbs::DEFAULT_MAX_MESSAGE_LENGTH),
+            ]);
         }
 
         if ($this->app->runningInConsole()) {

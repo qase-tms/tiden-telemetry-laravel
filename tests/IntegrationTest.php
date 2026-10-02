@@ -12,6 +12,7 @@ final class IntegrationTest extends TestCase
     {
         $this->assertSame('http://test@localhost/proj', config('tiden.dsn'));
         $this->assertSame('testing', config('tiden.environment'));
+        $this->assertSame(1024, config('tiden.breadcrumbs.max_message_length'));
     }
 
     public function test_reported_exception_is_captured_and_sent(): void
