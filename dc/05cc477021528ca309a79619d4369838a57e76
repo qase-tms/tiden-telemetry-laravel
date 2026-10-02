@@ -1,0 +1,21 @@
+config/tiden.php
+  s_6b815d6a11a5f5::t_5c158dbbc7c7b6 44-55
+src/TidenServiceProvider.php
+  s_6b815d6a11a5f5::t_e1c10d277088aa 82-94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dc05cc477021528ca309a79619d4369838a57e76",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
