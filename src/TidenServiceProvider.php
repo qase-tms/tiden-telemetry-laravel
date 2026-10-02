@@ -87,6 +87,12 @@ final class TidenServiceProvider extends ServiceProvider
             if ((bool) ($queue['capture_timeouts'] ?? true)) {
                 QueueTimeoutCapture::register($events);
             }
+
+            // Opt-in: error-level log records that carry a reportable exception.
+            $logs = (array) ($config['logs'] ?? []);
+            if ((bool) ($logs['capture_exceptions'] ?? false)) {
+                ErrorLogCapture::register($events, $handler);
+            }
         }
 
         if ($this->app->runningInConsole()) {

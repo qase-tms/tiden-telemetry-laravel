@@ -48,4 +48,10 @@ return [
     'queue' => [
         'capture_timeouts' => (bool) env('TIDEN_QUEUE_CAPTURE_TIMEOUTS', true),
     ],
+
+    // Capture error-level (and higher) log records whose context carries an
+    // `exception`, for code that only logs a caught exception. Off by default.
+    'logs' => [
+        'capture_exceptions' => (bool) env('TIDEN_LOGS_CAPTURE_EXCEPTIONS', false),
+    ],
 ];
