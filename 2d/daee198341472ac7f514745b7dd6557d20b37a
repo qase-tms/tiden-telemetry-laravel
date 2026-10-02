@@ -1,0 +1,23 @@
+src/TidenServiceProvider.php
+  s_6b815d6a11a5f5::t_c9ddca6b4f7cb9 47
+src/TransportFailureLogger.php
+  s_6b815d6a11a5f5::t_ed7c3b2fd2ff99 1-38
+tests/IntegrationTest.php
+  s_6b815d6a11a5f5::t_c15f2cac081df9 12,19,21,105-154
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2ddaee198341472ac7f514745b7dd6557d20b37a",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
