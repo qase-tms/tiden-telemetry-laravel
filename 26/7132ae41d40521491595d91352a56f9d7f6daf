@@ -1,0 +1,23 @@
+README.md
+  s_6b815d6a11a5f5::t_fde73366c35bc9 45-46,102-142
+tests/QueueTimeoutCaptureTest.php
+  s_6b815d6a11a5f5::t_0a4c2319736e27 14,45,57,65,74-75,83,118,120
+tests/ErrorLogCaptureTest.php
+  s_6b815d6a11a5f5::t_3e249073418b93 13-14,30-31,39-40,47,50,60,69,78,84-85,87-89,92-93,95-96,99,101,104,106-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "267132ae41d40521491595d91352a56f9d7f6daf",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
