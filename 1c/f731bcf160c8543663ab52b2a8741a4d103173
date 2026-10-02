@@ -1,0 +1,23 @@
+src/ErrorLogCapture.php
+  s_6b815d6a11a5f5::t_47a5cb18751b66 1-45
+tests/ErrorLogCaptureTest.php
+  s_6b815d6a11a5f5::t_663a18d098afec 1-142
+tests/Fixtures/IgnoredLogException.php
+  s_6b815d6a11a5f5::t_1f9c939b84653b 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1cf731bcf160c8543663ab52b2a8741a4d103173",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
