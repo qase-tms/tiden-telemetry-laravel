@@ -10,6 +10,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
 use Tiden\Sdk;
+use Tiden\Transport\TransportInterface;
 
 /**
  * Auto-discovered Laravel integration. Initializes the Tiden SDK from config and
@@ -30,14 +31,21 @@ final class TidenServiceProvider extends ServiceProvider
         $dsn = $config['dsn'] ?? null;
 
         if (is_string($dsn) && $dsn !== '') {
-            // Laravel owns global error handling, so the core SDK's own handlers
-            // are disabled — capture flows through the reportable callback below.
-            Sdk::init([
+            // A container binding replaces the curl transport (tests, dry runs).
+            $transport = $this->app->bound(TransportInterface::class)
+                ? $this->app->make(TransportInterface::class)
+                : null;
+
+            $options = [
                 'dsn' => $dsn,
                 'release' => $config['release'] ?? null,
                 'environment' => $config['environment'] ?? null,
                 'send_default_pii' => (bool) ($config['send_default_pii'] ?? false),
-            ], captureGlobals: false);
+            ];
+
+            // Laravel owns global error handling, so the core SDK's own handlers
+            // are disabled — capture flows through the reportable callback below.
+            Sdk::init($options, captureGlobals: false, transport: $transport);
 
             // The framework/Collision handler exposes reportable(); guard for any
             // custom handler that doesn't.
