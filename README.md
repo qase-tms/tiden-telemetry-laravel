@@ -42,6 +42,8 @@ php artisan vendor:publish --tag=tiden-config
 | `breadcrumbs.queue` | `TIDEN_BREADCRUMBS_QUEUE` | `true` | Record queue job processing, completion and failure. |
 | `breadcrumbs.logs` | `TIDEN_BREADCRUMBS_LOGS` | `true` | Record log messages (never their context). |
 | `breadcrumbs.max_message_length` | `TIDEN_BREADCRUMBS_MAX_MESSAGE_LENGTH` | `1024` | Cut SQL and log breadcrumb messages to this many bytes, on a UTF-8 character boundary. `0` = no limit; an empty or invalid value means the default. |
+| `queue.capture_timeouts` | `TIDEN_QUEUE_CAPTURE_TIMEOUTS` | `true` | Capture queue jobs that fail because they run past their timeout. See [Queue job timeouts](#queue-job-timeouts). |
+| `logs.capture_exceptions` | `TIDEN_LOGS_CAPTURE_EXCEPTIONS` | `false` | Capture `error`-level (and higher) log records that carry an exception. See [Error-level log records](#error-level-log-records). |
 
 ### before_send
 
@@ -96,6 +98,53 @@ the HTTP status, the envelope size in bytes and the curl error number. The
 record never contains the ingest URL (it includes the DSN key) or the event
 payload. If logging that record causes another failed send, the second failure
 is not logged, so the integration cannot loop.
+
+## Queue job timeouts
+
+When a queue job runs past its timeout, the worker marks the job as failed and
+then kills the process. It does not call `report()`, so the reportable
+callback never sees the exception. The integration listens for the `JobFailed`
+event and captures the exception when it is an
+`Illuminate\Queue\TimeoutExceededException`. A timeout fails the job only on
+its last attempt, when it uses up the job's `maxExceptions`, or when the job
+sets `failOnTimeout`. A timeout that does not fail the job releases it for a
+retry, and the integration does not capture it.
+
+With `Worker::$killOnTimeout = false` (Laravel 13) the worker does not kill the
+process: it throws the same `TimeoutExceededException` and reports it. Tiden
+sends the same exception object once, so this is still one event.
+
+The worker reports every other job failure itself, so the integration does not
+capture those failures again.
+
+On by default. Set `TIDEN_QUEUE_CAPTURE_TIMEOUTS=false` to turn it off.
+
+## Error-level log records
+
+Some code catches an exception and only logs it:
+
+```php
+try {
+    $gateway->charge($order);
+} catch (PaymentFailed $e) {
+    Log::error('Charge failed', ['exception' => $e]);
+}
+```
+
+Set `TIDEN_LOGS_CAPTURE_EXCEPTIONS=true` to capture these exceptions too. The
+integration then captures a log record when all of these conditions are true:
+
+- The level is `error`, `critical`, `alert` or `emergency`.
+- `context['exception']` is a `Throwable`.
+- The exception handler would report it (`shouldReport()`), so the classes in
+  `dontReport` stay out.
+
+Laravel's exception handler logs every exception that it reports. The
+integration skips that log record (the exception is already captured), so
+`report($e)` still makes one event when this option is on, and report
+throttling (`throttle()`) works as it does without Tiden.
+
+Off by default.
 
 ## Manual capture
 
