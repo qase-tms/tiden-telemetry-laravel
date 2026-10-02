@@ -1,0 +1,27 @@
+config/tiden.php
+  s_6b815d6a11a5f5::t_c845486bd42df8 24-26
+src/Breadcrumbs.php
+  s_6b815d6a11a5f5::t_91a6c740ac404b 20-23,27-30,32-35,37,45,73-74,76,84-93
+src/TidenServiceProvider.php
+  s_6b815d6a11a5f5::t_f318756b7562c8 59-60,62-67
+tests/BreadcrumbsTest.php
+  s_6b815d6a11a5f5::t_df70af3118708a 10,31-85
+tests/IntegrationTest.php
+  s_6b815d6a11a5f5::t_ec1ee225e07b62 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e06a80a31aae2128cf59ed69d584e38a8b54a58a",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
