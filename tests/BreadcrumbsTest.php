@@ -8,6 +8,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Orchestra\Testbench\Attributes\DefineEnvironment;
+use Tiden\Laravel\TransportFailureLogger;
 
 final class BreadcrumbsTest extends TestCase
 {
@@ -72,6 +73,36 @@ final class BreadcrumbsTest extends TestCase
         $this->app->make(ExceptionHandler::class)->report(new \RuntimeException('boom'));
 
         $this->assertContains(str_repeat('y', 1024), $this->breadcrumbMessages($this->lastEvent()));
+    }
+
+    #[DefineEnvironment('useEmptyMessageLength')]
+    public function test_empty_message_length_keeps_the_default_limit(): void
+    {
+        Log::info(str_repeat('y', 3000));
+
+        $this->app->make(ExceptionHandler::class)->report(new \RuntimeException('boom'));
+
+        $messages = $this->breadcrumbMessages($this->lastEvent());
+        $this->assertContains(str_repeat('y', 1024), $messages);
+        $this->assertNotContains(str_repeat('y', 3000), $messages);
+    }
+
+    public function test_transport_failure_log_is_not_recorded_as_a_breadcrumb(): void
+    {
+        TransportFailureLogger::log(['reason' => 'suppressed', 'status' => null, 'bytes' => 10, 'curl_errno' => null]);
+        Log::info('a real log line');
+
+        $this->app->make(ExceptionHandler::class)->report(new \RuntimeException('boom'));
+
+        $messages = $this->breadcrumbMessages($this->lastEvent());
+        $this->assertContains('a real log line', $messages);
+        $this->assertNotContains(TransportFailureLogger::MESSAGE, $messages);
+    }
+
+    protected function useEmptyMessageLength($app): void
+    {
+        // As env('TIDEN_BREADCRUMBS_MAX_MESSAGE_LENGTH', 1024) delivers a variable that is set but empty.
+        $app['config']->set('tiden.breadcrumbs.max_message_length', '');
     }
 
     protected function useShortMessages($app): void

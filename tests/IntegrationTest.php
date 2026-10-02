@@ -15,6 +15,7 @@ use Orchestra\Testbench\Attributes\DefineEnvironment;
 use Tiden\Laravel\Breadcrumbs;
 use Tiden\Laravel\Tests\Fixtures\BeforeSendHooks;
 use Tiden\Laravel\Tests\Fixtures\InvokableBeforeSend;
+use Tiden\Laravel\Tests\Fixtures\UnresolvableBeforeSend;
 use Tiden\Laravel\TidenServiceProvider;
 use Tiden\Laravel\TransportFailureLogger;
 use Tiden\Laravel\UnitOfWorkScope;
@@ -79,6 +80,52 @@ final class IntegrationTest extends TestCase
     public function test_max_breadcrumbs_reaches_the_sdk(): void
     {
         $this->assertSame(3, $this->sdkOptions()->maxBreadcrumbs);
+    }
+
+    #[DefineEnvironment('useEmptyMaxBreadcrumbs')]
+    public function test_empty_max_breadcrumbs_falls_back_to_the_default(): void
+    {
+        $this->assertSame(100, $this->sdkOptions()->maxBreadcrumbs);
+    }
+
+    #[DefineEnvironment('useZeroMaxBreadcrumbs')]
+    public function test_zero_max_breadcrumbs_falls_back_to_the_default(): void
+    {
+        Log::info('kept');
+        Sdk::captureMessage('after a log');
+
+        $this->assertSame(100, $this->sdkOptions()->maxBreadcrumbs);
+        $this->assertContains('kept', $this->breadcrumbMessages($this->lastEvent()));
+    }
+
+    public function test_max_breadcrumbs_resolution(): void
+    {
+        $this->assertSame(3, TidenServiceProvider::resolveMaxBreadcrumbs('3'));
+        $this->assertSame(100, TidenServiceProvider::resolveMaxBreadcrumbs(''));
+        $this->assertSame(100, TidenServiceProvider::resolveMaxBreadcrumbs(0));
+        $this->assertSame(100, TidenServiceProvider::resolveMaxBreadcrumbs(-5));
+        $this->assertSame(100, TidenServiceProvider::resolveMaxBreadcrumbs(null));
+        $this->assertSame(100, TidenServiceProvider::resolveMaxBreadcrumbs('abc'));
+    }
+
+    public function test_max_message_length_resolution(): void
+    {
+        $this->assertSame(16, TidenServiceProvider::resolveMaxMessageLength('16'));
+        $this->assertSame(0, TidenServiceProvider::resolveMaxMessageLength(0), '0 stays "unlimited"');
+        $this->assertSame(0, TidenServiceProvider::resolveMaxMessageLength('0'));
+        $this->assertSame(1024, TidenServiceProvider::resolveMaxMessageLength(''), 'an empty env var is not "unlimited"');
+        $this->assertSame(1024, TidenServiceProvider::resolveMaxMessageLength(null));
+        $this->assertSame(1024, TidenServiceProvider::resolveMaxMessageLength(-1));
+        $this->assertSame(1024, TidenServiceProvider::resolveMaxMessageLength('abc'));
+    }
+
+    #[DefineEnvironment('useUnresolvableBeforeSend')]
+    public function test_unresolvable_before_send_is_ignored_and_the_app_still_boots(): void
+    {
+        Sdk::captureMessage('hello');
+
+        $this->assertCount(1, $this->transport->envelopes, 'the event is still sent');
+        $this->assertArrayNotHasKey('before_send', $this->lastEvent()['tags'] ?? []);
     }
 
     public function test_http_timeout_defaults_to_five_seconds_in_console(): void
@@ -200,6 +247,22 @@ final class IntegrationTest extends TestCase
     protected function useThreeBreadcrumbs($app): void
     {
         $app['config']->set('tiden.max_breadcrumbs', 3);
+    }
+
+    protected function useEmptyMaxBreadcrumbs($app): void
+    {
+        // As env('TIDEN_MAX_BREADCRUMBS', 100) delivers a variable that is set but empty.
+        $app['config']->set('tiden.max_breadcrumbs', '');
+    }
+
+    protected function useZeroMaxBreadcrumbs($app): void
+    {
+        $app['config']->set('tiden.max_breadcrumbs', 0);
+    }
+
+    protected function useUnresolvableBeforeSend($app): void
+    {
+        $app['config']->set('tiden.before_send', UnresolvableBeforeSend::class);
     }
 
     protected function defineEnvironment($app): void

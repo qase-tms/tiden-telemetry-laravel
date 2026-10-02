@@ -35,13 +35,13 @@ php artisan vendor:publish --tag=tiden-config
 | `environment` | `TIDEN_ENVIRONMENT` | `APP_ENV` | Deployment environment. |
 | `send_default_pii` | `TIDEN_SEND_DEFAULT_PII` | `false` | Send likely-PII (off by default; PII is scrubbed). |
 | `http_timeout` | `TIDEN_HTTP_TIMEOUT` | `5.0` in the console, `2.0` on web requests | Seconds one synchronous send may take. |
-| `max_breadcrumbs` | `TIDEN_MAX_BREADCRUMBS` | `100` | Breadcrumbs kept per event; the oldest are dropped first. |
+| `max_breadcrumbs` | `TIDEN_MAX_BREADCRUMBS` | `100` | Breadcrumbs kept per event; the oldest are dropped first. Empty or non-positive values fall back to the default. |
 | `before_send` | — | `null` | Hook to change or drop an event. See [before_send](#before_send). |
 | `reset_scope` | `TIDEN_RESET_SCOPE` | `true` | Fresh breadcrumbs per queue job and top-level command. See [Scope per job and command](#scope-per-job-and-command). |
 | `breadcrumbs.sql` | `TIDEN_BREADCRUMBS_SQL` | `true` | Record SQL statements (never their bindings). |
 | `breadcrumbs.queue` | `TIDEN_BREADCRUMBS_QUEUE` | `true` | Record queue job processing, completion and failure. |
 | `breadcrumbs.logs` | `TIDEN_BREADCRUMBS_LOGS` | `true` | Record log messages (never their context). |
-| `breadcrumbs.max_message_length` | `TIDEN_BREADCRUMBS_MAX_MESSAGE_LENGTH` | `1024` | Cut SQL and log breadcrumb messages to this many bytes, on a UTF-8 character boundary. `0` = no limit. |
+| `breadcrumbs.max_message_length` | `TIDEN_BREADCRUMBS_MAX_MESSAGE_LENGTH` | `1024` | Cut SQL and log breadcrumb messages to this many bytes, on a UTF-8 character boundary. `0` = no limit; an empty or invalid value means the default. |
 
 ### before_send
 

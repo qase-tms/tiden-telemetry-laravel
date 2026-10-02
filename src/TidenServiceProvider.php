@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
 use Tiden\Sdk;
@@ -43,7 +44,7 @@ final class TidenServiceProvider extends ServiceProvider
                 'environment' => $config['environment'] ?? null,
                 'send_default_pii' => (bool) ($config['send_default_pii'] ?? false),
                 'http_timeout' => self::resolveHttpTimeout($config['http_timeout'] ?? null, $this->app->runningInConsole()),
-                'max_breadcrumbs' => (int) ($config['max_breadcrumbs'] ?? 100),
+                'max_breadcrumbs' => self::resolveMaxBreadcrumbs($config['max_breadcrumbs'] ?? null),
                 'on_transport_failure' => [TransportFailureLogger::class, 'log'],
             ];
             $beforeSend = $this->resolveBeforeSend($config['before_send'] ?? null);
@@ -77,7 +78,7 @@ final class TidenServiceProvider extends ServiceProvider
                 'sql' => (bool) ($breadcrumbs['sql'] ?? true),
                 'queue' => (bool) ($breadcrumbs['queue'] ?? true),
                 'logs' => (bool) ($breadcrumbs['logs'] ?? true),
-                'max_message_length' => (int) ($breadcrumbs['max_message_length'] ?? Breadcrumbs::DEFAULT_MAX_MESSAGE_LENGTH),
+                'max_message_length' => self::resolveMaxMessageLength($breadcrumbs['max_message_length'] ?? null),
             ]);
         }
 
@@ -105,9 +106,42 @@ final class TidenServiceProvider extends ServiceProvider
     }
 
     /**
+     * A positive number wins; anything else (an empty env var casts to 0) means
+     * the default of 100. Zero would silently drop every breadcrumb.
+     *
+     * @internal
+     */
+    public static function resolveMaxBreadcrumbs(mixed $configured): int
+    {
+        if (is_numeric($configured) && (int) $configured > 0) {
+            return (int) $configured;
+        }
+
+        return 100;
+    }
+
+    /**
+     * `0` is a deliberate "no limit"; null, '' (an empty env var) and anything
+     * non-numeric or negative fall back to the default so a blank variable does
+     * not switch truncation off.
+     *
+     * @internal
+     */
+    public static function resolveMaxMessageLength(mixed $configured): int
+    {
+        if (is_numeric($configured) && (int) $configured >= 0) {
+            return (int) $configured;
+        }
+
+        return Breadcrumbs::DEFAULT_MAX_MESSAGE_LENGTH;
+    }
+
+    /**
      * `before_send` must survive `config:cache`, so only an array callable or the
      * class-string of an invokable is accepted; the class is resolved from the
-     * container. Closures and anything else are ignored.
+     * container. Closures and anything else are ignored. A class the container
+     * cannot build is logged and ignored too: monitoring must never stop the app
+     * from booting.
      */
     private function resolveBeforeSend(mixed $configured): ?callable
     {
@@ -120,7 +154,13 @@ final class TidenServiceProvider extends ServiceProvider
         }
 
         if (is_string($configured) && class_exists($configured)) {
-            $instance = $this->app->make($configured);
+            try {
+                $instance = $this->app->make($configured);
+            } catch (Throwable $e) {
+                Log::warning('tiden.before_send.unresolvable', ['class' => $configured, 'error' => $e->getMessage()]);
+
+                return null;
+            }
 
             return is_callable($instance) ? $instance : null;
         }

@@ -20,7 +20,8 @@ return [
     'http_timeout' => env('TIDEN_HTTP_TIMEOUT'),
 
     // How many breadcrumbs ride along with one event (oldest dropped first).
-    'max_breadcrumbs' => (int) env('TIDEN_MAX_BREADCRUMBS', 100),
+    // Empty or non-positive values fall back to 100.
+    'max_breadcrumbs' => env('TIDEN_MAX_BREADCRUMBS', 100),
 
     // Last-chance hook to mutate or drop an event: [Class::class, 'staticMethod']
     // or the class-string of an invokable resolved from the container. Closures
@@ -38,7 +39,7 @@ return [
         'queue' => (bool) env('TIDEN_BREADCRUMBS_QUEUE', true),
         'logs' => (bool) env('TIDEN_BREADCRUMBS_LOGS', true),
         // SQL and log messages are cut to this many bytes (on a UTF-8
-        // character boundary). 0 = unlimited.
-        'max_message_length' => (int) env('TIDEN_BREADCRUMBS_MAX_MESSAGE_LENGTH', 1024),
+        // character boundary). 0 = unlimited; empty or invalid = the default.
+        'max_message_length' => env('TIDEN_BREADCRUMBS_MAX_MESSAGE_LENGTH', 1024),
     ],
 ];
