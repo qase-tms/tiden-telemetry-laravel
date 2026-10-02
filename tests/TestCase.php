@@ -10,6 +10,7 @@ use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as Orchestra;
 use ReflectionFunction;
+use Tiden\Laravel\ReportedExceptions;
 use Tiden\Laravel\TidenServiceProvider;
 use Tiden\Laravel\UnitOfWorkScope;
 use Tiden\Scope;
@@ -35,6 +36,7 @@ abstract class TestCase extends Orchestra
         // without a DSN must not see the previous test's client.
         Sdk::close();
         UnitOfWorkScope::reset();
+        ReportedExceptions::reset();
 
         parent::setUp();
 
@@ -52,6 +54,7 @@ abstract class TestCase extends Orchestra
 
         Sdk::close();
         UnitOfWorkScope::reset();
+        ReportedExceptions::reset();
     }
 
     /** @return array<int,class-string> */
