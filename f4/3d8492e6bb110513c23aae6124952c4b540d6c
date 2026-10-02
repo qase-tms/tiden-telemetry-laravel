@@ -1,0 +1,20 @@
+README.md
+  s_6b815d6a11a5f5::t_fde73366c35bc9 45-46,102-141,145
+  s_6b815d6a11a5f5::t_d3b3d4353793de 142-144,146-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f43d8492e6bb110513c23aae6124952c4b540d6c",
+  "prompts": {},
+  "sessions": {
+    "s_6b815d6a11a5f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a4eb86e2-6bb5-44d5-b5d2-48c51eb2f5f1",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "prostoandrei <avaganov@qase.io>"
+    }
+  }
+}
