@@ -15,7 +15,8 @@ use Tiden\Sdk;
  * whose context carries an `exception` that the exception handler would report.
  *
  * Opt-in. Laravel's handler logs every exception it reports; that record is
- * skipped (isReporting()), and the SDK would send the same Throwable once anyway.
+ * skipped ({@see ReportedExceptions}), and the SDK would send the same Throwable
+ * once anyway.
  */
 final class ErrorLogCapture
 {
@@ -36,11 +37,13 @@ final class ErrorLogCapture
                     return;
                 }
 
-                // The handler's own log record for an exception it is reporting
-                // right now: the reportable callback has already captured it.
-                // Return before shouldReport(), which is not side-effect free: with
-                // throttle() it takes a rate-limiter slot on every call.
-                if (method_exists($handler, 'isReporting') && $handler->isReporting($exception)) {
+                // An exception the handler reported through the bridge (its own log
+                // record, or a later log line for the same object) is already
+                // captured. Return before shouldReport(), which is not side-effect
+                // free: with throttle() it takes a rate-limiter slot on every call.
+                // isReporting() is a second net for handlers that bypass reportable().
+                if (ReportedExceptions::contains($exception)
+                    || (method_exists($handler, 'isReporting') && $handler->isReporting($exception))) {
                     return;
                 }
 

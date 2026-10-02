@@ -15,6 +15,7 @@ use RuntimeException;
 use Throwable;
 use Tiden\Laravel\ErrorLogCapture;
 use Tiden\Laravel\QueueTimeoutCapture;
+use Tiden\Laravel\ReportedExceptions;
 use Tiden\Laravel\Tests\Fixtures\IgnoredLogException;
 use Tiden\Laravel\Tests\Fixtures\ThrowingBeforeSend;
 use Tiden\Sdk;
@@ -69,6 +70,37 @@ final class ErrorLogCaptureTest extends TestCase
     public function test_report_throttling_with_log_capture_off(): void
     {
         $this->assertSame(2, $this->reportThreeThrottledToTwo());
+    }
+
+    #[DefineEnvironment('enableLogCapture')]
+    public function test_reportable_callback_marks_the_exception_as_reported(): void
+    {
+        $e = new RuntimeException('reported once');
+
+        $this->app->make(ExceptionHandler::class)->report($e);
+
+        $this->assertTrue(ReportedExceptions::contains($e));
+        $this->assertFalse(ReportedExceptions::contains(new RuntimeException('never reported')));
+    }
+
+    #[DefineEnvironment('enableLogCapture')]
+    public function test_reported_exception_skips_should_report_without_is_reporting(): void
+    {
+        // Outside of report(), so isReporting() is false and only the bridge's
+        // own record can short-circuit the listener.
+        $calls = 0;
+        $this->app->make(ExceptionHandler::class)->dontReportWhen(static function (Throwable $e) use (&$calls): bool {
+            $calls++;
+
+            return false;
+        });
+        $e = new RuntimeException('already reported');
+        ReportedExceptions::mark($e);
+
+        Log::error('logged again later', ['exception' => $e]);
+
+        $this->assertCount(0, $this->transport->envelopes);
+        $this->assertSame(0, $calls, 'shouldReport() must not run for a reported exception');
     }
 
     #[DefineEnvironment('enableLogCapture')]

@@ -61,6 +61,7 @@ final class TidenServiceProvider extends ServiceProvider
             $handler = $this->app->make(ExceptionHandler::class);
             if (method_exists($handler, 'reportable')) {
                 $handler->reportable(static function (Throwable $e): void {
+                    ReportedExceptions::mark($e);
                     Sdk::captureException($e);
                 });
             }
